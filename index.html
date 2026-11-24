@@ -429,10 +429,10 @@
     const CURRENCY = " DA";
 
     const INGREDIENTS = [
-      { id: "beef", name: "Beef", price: 200, img: "images/beef.png", width: 175, stepY: 14 },
-      { id: "cheddar", name: "Cheddar", price: 80, img: "images/cheddar.png", width: 170, stepY: 8 },
-      { id: "lettuce", name: "Lettuce", price: 50, img: "images/lettuce.png", width: 185, stepY: 9 },
-      { id: "tomato", name: "Tomato", price: 50, img: "images/tomato.png", width: 155, stepY: 8 }
+      { id: "beef", name: "Beef", price: 200, img: "beef.png", width: 175, stepY: 14 },
+      { id: "cheddar", name: "Cheddar", price: 80, img: "cheddar.png", width: 170, stepY: 8 },
+      { id: "lettuce", name: "Lettuce", price: 50, img: "lettuce.png", width: 185, stepY: 9 },
+      { id: "tomato", name: "Tomato", price: 50, img: "tomato.png", width: 155, stepY: 8 }
     ];
 
     let baseMode = "beef";
@@ -496,7 +496,7 @@
       let currentHeightOffset = 0;
 
       const bottomBun = document.createElement("img");
-      bottomBun.src = "images/bun-bottom.png";
+      bottomBun.src = "bun-bottom.png";
       bottomBun.alt = "Bottom bun";
       bottomBun.className = "layer";
       bottomBun.style.width = "210px";
@@ -523,7 +523,7 @@
 
       if (showTopBun) {
         const topBun = document.createElement("img");
-        topBun.src = "images/bun-top.png";
+        topBun.src = "bun-top.png";
         topBun.alt = "Top bun";
         topBun.className = "layer drop";
         topBun.style.width = "195px";
