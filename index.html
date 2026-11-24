@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Build your burger</title>
+  <style>
+    :root {
+      --bg: #07080a;
+      --surface: #12141a;
+      --surface-active: #1a1e28;
+      --border: #232836;
+      --text: #f5f7fa;
+      --muted: #8b92a5;
+      --accent: #ff5a1f;
+      --accent-hover: #ff6d38;
+      --success: #16a34a;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 14px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .brand {
+      text-align: center;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.4px;
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .toggle-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: var(--surface);
+      padding: 4px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .toggle-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .toggle-btn.active {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      height: 290px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      margin: 4px 0;
+    }
+
+    .layer {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      user-select: none;
+      transition: transform 0.25s ease, opacity 0.2s ease;
+    }
+
+    .layer.drop {
+      animation: dropIn 0.36s cubic-bezier(0.22, 1.25, 0.36, 1) forwards;
+    }
+
+    @keyframes dropIn {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -95px) scale(0.94);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+      }
+    }
+
+    .status-banner {
+      min-height: 22px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #facc15;
+    }
+
+    .post-actions {
+      display: none;
+      justify-content: center;
+      gap: 18px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .post-actions.show {
+      display: flex;
+    }
+
+    .link-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .ingredients-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .ing-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+    }
+
+    .ing-card:active {
+      transform: scale(0.97);
+    }
+
+    .ing-card.selected {
+      border-color: var(--accent);
+      background: var(--surface-active);
+    }
+
+    .ing-card img {
+      width: 52px;
+      height: 38px;
+      object-fit: contain;
+    }
+
+    .ing-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .ing-price {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .badge.show {
+      display: flex;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: none;
+      background: #2b3040;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .ing-card.selected .remove-btn {
+      display: flex;
+    }
+
+    .cta-btn {
+      margin-top: auto;
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      padding: 16px 18px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .cta-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .cta-btn.added {
+      background: var(--success);
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .cta-btn.view-order {
+      background: var(--accent);
+      justify-content: center;
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .drawer-backdrop.open {
+      display: flex;
+    }
+
+    .drawer {
+      width: 100%;
+      max-width: 480px;
+      max-height: 85dvh;
+      background: #0e1015;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      border-top: 1px solid var(--border);
+      padding: 18px 16px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .drawer-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .close-btn {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .order-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .order-meta {
+      flex: 1;
+    }
+
+    .order-title {
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .order-sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .order-price {
+      font-weight: 800;
+      font-size: 14px;
+      margin-top: 6px;
+      color: #fb923c;
+    }
+
+    .qty-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      padding: 6px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .qty-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+    }
+
+    .place-btn {
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="brand">Carte</div>
+    <h1>Build your burger</h1>
+
+    <div class="toggle-row">
+      <button class="toggle-btn active" id="modeBeef" onclick="setBaseMode('beef')">Beef</button>
+      <button class="toggle-btn" id="modeClassic" onclick="setBaseMode('classic')">Classic</button>
+    </div>
+
+    <div class="stage" id="stage"></div>
+
+    <div class="status-banner" id="statusBanner"></div>
+    <div class="post-actions" id="postActions">
+      <button class="link-btn" onclick="resetBuilder()">Make another</button>
+    </div>
+
+    <div class="ingredients-grid" id="ingredientsGrid"></div>
+
+    <button class="cta-btn" id="ctaBtn" onclick="handleCtaClick()">
+      <span>Add to order</span>
+      <span id="totalPrice">450 DA</span>
+    </button>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawerOnBackdrop(event)">
+    <div class="drawer">
+      <div class="drawer-header">
+        <h2>Your order</h2>
+        <button class="close-btn" onclick="toggleDrawer(false)">Back</button>
+      </div>
+      <div id="orderList"></div>
+      <button class="place-btn" id="placeOrderBtn" onclick="placeOrder()">Place order</button>
+    </div>
+  </div>
+
+  <script>
+    const BASE_PRICE = 450;
+    const CURRENCY = " DA";
+
+    const INGREDIENTS = [
+      { id: "beef", name: "Beef", price: 200, img: "images/beef.png", width: 175, stepY: 14 },
+      { id: "cheddar", name: "Cheddar", price: 80, img: "images/cheddar.png", width: 170, stepY: 8 },
+      { id: "lettuce", name: "Lettuce", price: 50, img: "images/lettuce.png", width: 185, stepY: 9 },
+      { id: "tomato", name: "Tomato", price: 50, img: "images/tomato.png", width: 155, stepY: 8 }
+    ];
+
+    let baseMode = "beef";
+    let counts = { beef: 1, cheddar: 0, lettuce: 0, tomato: 0 };
+    let orderState = "building";
+    let orders = [];
+
+    function formatPrice(val) {
+      return `${Math.round(val)}${CURRENCY}`;
+    }
+
+    function setBaseMode(mode) {
+      baseMode = mode;
+      document.getElementById("modeBeef").classList.toggle("active", mode === "beef");
+      document.getElementById("modeClassic").classList.toggle("active", mode === "classic");
+      if (orderState === "added" || orderState === "viewing") {
+        orderState = "building";
+        document.getElementById("statusBanner").textContent = "";
+        document.getElementById("postActions").classList.remove("show");
+      }
+      renderAll(null);
+    }
+
+    function addIngredient(id, event) {
+      if (event && event.target.classList.contains("remove-btn")) return;
+      if (orderState !== "building") {
+        orderState = "building";
+        document.getElementById("statusBanner").textContent = "";
+        document.getElementById("postActions").classList.remove("show");
+      }
+      counts[id] = (counts[id] || 0) + 1;
+      renderAll(id);
+    }
+
+    function removeIngredient(id, event) {
+      event.stopPropagation();
+      if (orderState !== "building") {
+        orderState = "building";
+        document.getElementById("statusBanner").textContent = "";
+        document.getElementById("postActions").classList.remove("show");
+      }
+      if (counts[id] > 0) {
+        counts[id] -= 1;
+      }
+      renderAll(null);
+    }
+
+    function calculateCurrentPrice() {
+      let sum = BASE_PRICE;
+      for (const item of INGREDIENTS) {
+        sum += (counts[item.id] || 0) * item.price;
+      }
+      return sum;
+    }
+
+    function renderStage(animatedId, showTopBun) {
+      const stage = document.getElementById("stage");
+      stage.innerHTML = "";
+
+      let z = 1;
+      let currentHeightOffset = 0;
+
+      const bottomBun = document.createElement("img");
+      bottomBun.src = "images/bun-bottom.png";
+      bottomBun.alt = "Bottom bun";
+      bottomBun.className = "layer";
+      bottomBun.style.width = "210px";
+      bottomBun.style.bottom = "12px";
+      bottomBun.style.zIndex = z++;
+      stage.appendChild(bottomBun);
+
+      currentHeightOffset = 46;
+
+      for (const item of INGREDIENTS) {
+        const qty = counts[item.id] || 0;
+        for (let i = 0; i < qty; i++) {
+          const img = document.createElement("img");
+          img.src = item.img;
+          img.alt = item.name;
+          img.className = "layer" + (item.id === animatedId && i === qty - 1 ? " drop" : "");
+          img.style.width = item.width + "px";
+          img.style.bottom = (12 + currentHeightOffset) + "px";
+          img.style.zIndex = z++;
+          stage.appendChild(img);
+          currentHeightOffset += item.stepY;
+        }
+      }
+
+      if (showTopBun) {
+        const topBun = document.createElement("img");
+        topBun.src = "images/bun-top.png";
+        topBun.alt = "Top bun";
+        topBun.className = "layer drop";
+        topBun.style.width = "195px";
+        topBun.style.bottom = (12 + currentHeightOffset) + "px";
+        topBun.style.zIndex = z++;
+        stage.appendChild(topBun);
+      }
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById("ingredientsGrid");
+      grid.innerHTML = "";
+
+      for (const item of INGREDIENTS) {
+        const qty = counts[item.id] || 0;
+        const card = document.createElement("div");
+        card.className = "ing-card" + (qty > 0 ? " selected" : "");
+        card.onclick = (e) => addIngredient(item.id, e);
+
+        card.innerHTML = `
+          <button class="remove-btn" title="Remove">−</button>
+          <span class="badge ${qty > 0 ? "show" : ""}">${qty}</span>
+          <img src="${item.img}" alt="${item.name}" />
+          <span class="ing-name">${item.name}</span>
+          <span class="ing-price">+${formatPrice(item.price)}</span>
+        `;
+
+        card.querySelector(".remove-btn").onclick = (e) => removeIngredient(item.id, e);
+        grid.appendChild(card);
+      }
+    }
+
+    function renderCta() {
+      const btn = document.getElementById("ctaBtn");
+      const priceText = formatPrice(calculateCurrentPrice());
+
+      btn.classList.remove("added", "view-order");
+
+      if (orderState === "plating") {
+        btn.innerHTML = `<span>Plating it up...</span>`;
+      } else if (orderState === "added") {
+        btn.classList.add("added");
+        btn.innerHTML = `<span>✓ Added to your order</span>`;
+      } else if (orderState === "viewing") {
+        btn.classList.add("view-order");
+        btn.innerHTML = `<span>View order</span>`;
+      } else {
+        btn.innerHTML = `<span>Add to order</span><span id="totalPrice">${priceText}</span>`;
+      }
+    }
+
+    function renderAll(animatedId) {
+      const showTop = orderState === "plating" || orderState === "added" || orderState === "viewing";
+      renderStage(animatedId, showTop);
+      renderGrid();
+      renderCta();
+    }
+
+    function handleCtaClick() {
+      if (orderState === "building") {
+        orderState = "plating";
+        document.getElementById("statusBanner").textContent = "Plating it up";
+        renderAll(null);
+
+        setTimeout(() => {
+          const unitPrice = calculateCurrentPrice();
+          const summaryParts = [];
+          for (const item of INGREDIENTS) {
+            if (counts[item.id] > 0) {
+              summaryParts.push(counts[item.id] > 1 ? `${item.name} x${counts[item.id]}` : item.name);
+            }
+          }
+
+          orders.push({
+            id: Date.now(),
+            title: baseMode === "beef" ? "Your beef burger" : "Your classic burger",
+            details: summaryParts.length ? summaryParts.join(", ") : "Standard bun",
+            unitPrice,
+            qty: 1
+          });
+
+          orderState = "added";
+          document.getElementById("statusBanner").textContent = "Added to your order";
+          document.getElementById("postActions").classList.add("show");
+          renderAll(null);
+
+          setTimeout(() => {
+            if (orderState === "added") {
+              orderState = "viewing";
+              renderCta();
+            }
+          }, 1100);
+        }, 700);
+      } else if (orderState === "added" || orderState === "viewing") {
+        orderState = "viewing";
+        renderCta();
+        toggleDrawer(true);
+      }
+    }
+
+    function resetBuilder() {
+      counts = { beef: 1, cheddar: 0, lettuce: 0, tomato: 0 };
+      orderState = "building";
+      document.getElementById("statusBanner").textContent = "";
+      document.getElementById("postActions").classList.remove("show");
+      renderAll(null);
+    }
+
+    function toggleDrawer(open) {
+      document.getElementById("drawerBackdrop").classList.toggle("open", open);
+      if (open) renderOrderList();
+    }
+
+    function closeDrawerOnBackdrop(e) {
+      if (e.target.id === "drawerBackdrop") toggleDrawer(false);
+    }
+
+    function changeOrderQty(id, delta) {
+      orders = orders
+        .map(item => item.id === id ? { ...item, qty: item.qty + delta } : item)
+        .filter(item => item.qty > 0);
+      renderOrderList();
+    }
+
+    function renderOrderList() {
+      const list = document.getElementById("orderList");
+      const placeBtn = document.getElementById("placeOrderBtn");
+
+      if (!orders.length) {
+        list.innerHTML = `<p style="color: var(--muted); text-align: center;">Your order is empty.</p>`;
+        placeBtn.textContent = "Place order";
+        return;
+      }
+
+      let grandTotal = 0;
+      list.innerHTML = "";
+
+      for (const item of orders) {
+        const lineTotal = item.unitPrice * item.qty;
+        grandTotal += lineTotal;
+
+        const row = document.createElement("div");
+        row.className = "order-item";
+        row.innerHTML = `
+          <div class="order-meta">
+            <div class="order-title">${item.title}</div>
+            <div class="order-sub">${item.details}</div>
+            <div class="order-price">${formatPrice(lineTotal)}</div>
+          </div>
+          <div class="qty-box">
+            <button class="qty-btn" onclick="changeOrderQty(${item.id}, -1)">−</button>
+            <span>${item.qty}</span>
+            <button class="qty-btn" onclick="changeOrderQty(${item.id}, 1)">+</button>
+          </div>
+        `;
+        list.appendChild(row);
+      }
+
+      placeBtn.textContent = `Place order · ${formatPrice(grandTotal)}`;
+    }
+
+    function placeOrder() {
+      if (!orders.length) return;
+      const lines = orders.map(i => `• ${i.qty}x ${i.title} (${i.details}) - ${formatPrice(i.unitPrice * i.qty)}`);
+      const total = orders.reduce((acc, i) => acc + i.unitPrice * i.qty, 0);
+      alert(`Order summary:\n\n${lines.join("\n")}\n\nTotal: ${formatPrice(total)}`);
+    }
+
+    renderAll(null);
+  </script>
+</body>
+</html>
